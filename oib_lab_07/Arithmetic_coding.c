@@ -58,11 +58,20 @@ void find_interval(char* string)
 		prev_left = new_left;
 	}
 
-	//0.01001000000101101111
-	//0.010001011110000010110101
-	//0.01001
+	// 0.1000000000000 = a
+	// 0.0111111111111 = mid = t/(2^s) // 9 / 2^5 =  0.01001
+	// 0.0111111011111 = b
+	// 0.0000000100000 = a-b
+	// 
+	// mid = b + (a-b)/2
 
-	printf("new_right-new_left                 = %.60e\nnew_right-new_left (but in double) = %.60e\nnew_left                           = %.60e\nnew_right                          = %.60e\nnew_left+new_size                  = %.60e\n", new_right-new_left, new_size, new_left, new_right, new_left+new_size);
+	// x = 0.1
+	// 0.110011001100110011001100110011001100110011001101
+	// 0.1
+	// 0.101011001100110011001100110011001100110011001101
+	// 0.00110011
+
+	//printf("new_right-new_left                 = %.60e\nnew_right-new_left (but in double) = %.60e\nnew_left                           = %.60e\nnew_right                          = %.60e\nnew_left+new_size                  = %.60e\n", new_right-new_left, new_size, new_left, new_right, new_left+new_size);
 	double right = new_right, left = new_left;
 	while (1)
 	{
@@ -83,14 +92,16 @@ void find_interval(char* string)
 			degree++;
 			break;
 		}
-		right *= 2; if (right > 1) right -= 1;
-		left *= 2; if (left > 1) left -= 1;
+		right *= 2; if (right >= 1) right -= 1;
+		left *= 2; if (left >= 1) left -= 1;
+		if (right == 0 && left == 0)
+			break;
 		degree++;
 		//printf("degree = %d\n", degree+1);
 	}
 
 	decode_number *= x;
-	printf("%.30e <= \n%.30e < \n%.30e\n", new_left, decode_number, new_right);
+	//printf("%.30e <= \n%.30e < \n%.30e\n", new_left, decode_number, new_right);
 }
 
 void coding_text(char* msg)

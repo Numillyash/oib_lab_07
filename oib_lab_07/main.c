@@ -8,6 +8,6 @@
 
 int main()
 {
-	coding_text("baabcabbcbabbacbabcbbacbabcbcaca");
-	//decoding_text();
+	coding_text("bascxbaaasxcxcsxcxcsxa");
+	decoding_text();
 }
