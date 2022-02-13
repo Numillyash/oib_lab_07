@@ -8,9 +8,6 @@
 
 int main()
 {
-	unsigned char message[] = { "babbc" };
-
-	double a, b;
-
-	find_interval(&a,&b, message);
+	coding_text("baabcabbcbabbacbabcbbacbabcbcaca");
+	//decoding_text();
 }
