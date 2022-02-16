@@ -3,11 +3,11 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
+#include "config.h"
 #include "Arithmetic_coding.h"
-
 
 int main()
 {
-	coding_text("bascxbaaasxcxcsxcxcsxa");
+	coding_text(TEXT);
 	decoding_text();
 }

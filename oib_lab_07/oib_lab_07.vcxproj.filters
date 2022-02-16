@@ -26,5 +26,8 @@
     <ClInclude Include="Arithmetic_coding.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

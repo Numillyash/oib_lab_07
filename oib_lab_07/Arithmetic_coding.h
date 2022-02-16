@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <stdlib.h>
+#include "config.h"
 #define DEBUG
 
 void find_interval(char* string);

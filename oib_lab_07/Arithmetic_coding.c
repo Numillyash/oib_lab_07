@@ -1,20 +1,23 @@
 #include "Arithmetic_coding.h"
 
-int existing_symbols[27];
-double existing_symbols_size[27];
-double existing_symbols_left[27];
-double existing_symbols_right[27];
+int existing_symbols[ALPHABET_SIZE];
+double existing_symbols_size[ALPHABET_SIZE];
+double existing_symbols_left[ALPHABET_SIZE];
+double existing_symbols_right[ALPHABET_SIZE];
 double x = 0; int degree = 0; // for double x / (2^degree) number
-double decode_number = 1;
+double decode_number = 1, degree_minus;
+
 
 void find_interval(char* string)
 {
 	int str_len = strlen(string);
-
+	int i = 0; // iterator
 	double curr_left, curr_size, new_left = 0, new_size = 0, new_right;
 	double prev_left = 0, prev_size = 1;
+	int ind; // index of current symbol
+	double right, left; // interval borders that will be changed due sicle
 
-	for (int i = 0; i < 27; i++)
+	for (i = 0; i < ALPHABET_SIZE; i++)
 	{
 		existing_symbols[i] = 0;
 		existing_symbols_size[i] = 0;
@@ -22,12 +25,12 @@ void find_interval(char* string)
 		existing_symbols_right[i] = 0;
 	}
 
-	for (int i = 0; i < str_len; i++)
+	for (i = 0; i < str_len; i++)
 	{
 		existing_symbols[(int)string[i] - (int)'a']++;
 	}
 
-	for (int i = 0; i < 27; i++)
+	for (i = 0; i < ALPHABET_SIZE; i++)
 	{
 		if (existing_symbols[i])
 		{
@@ -48,7 +51,7 @@ void find_interval(char* string)
 
 	for (int i = 0; i < str_len; i++)
 	{
-		int ind = (int)string[i] - (int)'a';
+		ind = (int)string[i] - (int)'a';
 		curr_left = existing_symbols_left[ind];
 		curr_size = existing_symbols_size[ind];
 		new_left = prev_left + curr_left * prev_size;
@@ -58,24 +61,11 @@ void find_interval(char* string)
 		prev_left = new_left;
 	}
 
-	// 0.1000000000000 = a
-	// 0.0111111111111 = mid = t/(2^s) // 9 / 2^5 =  0.01001
-	// 0.0111111011111 = b
-	// 0.0000000100000 = a-b
-	// 
-	// mid = b + (a-b)/2
-
-	// x = 0.1
-	// 0.110011001100110011001100110011001100110011001101
-	// 0.1
-	// 0.101011001100110011001100110011001100110011001101
-	// 0.00110011
-
-	//printf("new_right-new_left                 = %.60e\nnew_right-new_left (but in double) = %.60e\nnew_left                           = %.60e\nnew_right                          = %.60e\nnew_left+new_size                  = %.60e\n", new_right-new_left, new_size, new_left, new_right, new_left+new_size);
-	double right = new_right, left = new_left;
+	right = new_right;
+	left = new_left;
 	while (1)
 	{
-		if (0.5 >= right)
+		if (0.5 > right)
 		{
 			decode_number /= 2;
 			x = 2 * x + 0;
@@ -84,6 +74,20 @@ void find_interval(char* string)
 		{
 			decode_number /= 2;
 			x = 2 * x + 1;
+		}
+		else if (0.5 == right)
+		{
+			degree_minus = 0.5;
+			x = 2 * x + 0;
+			degree++;
+			decode_number /= 2;
+			while (right - degree_minus < left) {
+				degree_minus /= 2;
+				x = 2 * x + 1;
+				degree++;
+				decode_number /= 2;
+			}
+			break;
 		}
 		else
 		{
@@ -97,16 +101,14 @@ void find_interval(char* string)
 		if (right == 0 && left == 0)
 			break;
 		degree++;
-		//printf("degree = %d\n", degree+1);
 	}
 
 	decode_number *= x;
-	//printf("%.30e <= \n%.30e < \n%.30e\n", new_left, decode_number, new_right);
 }
 
 void coding_text(char* msg)
 {
-	int str_len = strlen(msg);
+	int str_len = (int)strlen(msg);
 	char* message = (char*)malloc(str_len + 2);
 	message[0] = '\0';
 	strcat(message, msg);
