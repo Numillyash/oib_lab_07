@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
         }
         else if(argv[1][0] == DECODE_SYMB)
         {
-            //decoding_text();
+            decoding_text(argv[2], argv[3]);
         }
         else
         {

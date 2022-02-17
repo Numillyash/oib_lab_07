@@ -10,17 +10,16 @@ typedef struct
 
 Ar_cod_char char_struct_array[ALPHABET_SIZE];
 
-double x = 0; int degree = 0; // for double x / (2^degree) number
-double decode_number = 1, degree_minus;
-
-void find_interval(char* string)
+void find_interval(char* string, double *x, int *degree)
 {
+	*x = 0; *degree = 0;
 	int str_len = strlen(string);
 	int i = 0; // iterator
 	double curr_left, curr_size, new_left = 0, new_size = 0, new_right;
 	double prev_left = 0, prev_size = 1;
 	int ind; // index of current symbol
 	double right, left; // interval borders that will be changed due sicle
+	double decode_number = 1, degree_minus;
 
 	for (i = 0; i < ALPHABET_SIZE; i++)
 	{
@@ -74,45 +73,45 @@ void find_interval(char* string)
 		if (0.5 > right)
 		{
 			decode_number /= 2;
-			x = 2 * x + 0;
+			*x = 2 * *x + 0;
 		}
 		else if (0.5 < left)
 		{
 			decode_number /= 2;
-			x = 2 * x + 1;
+			*x = 2 * *x + 1;
 		}
 		else if (0.5 == right)
 		{
 			degree_minus = 0.5;
-			x = 2 * x + 0;
-			degree++;
+			*x = 2 * *x + 0;
+			(*degree)++;
 			decode_number /= 2;
 			while (right - degree_minus < left) {
 				degree_minus /= 2;
-				x = 2 * x + 1;
-				degree++;
+				*x = 2 * *x + 1;
+				(*degree)++;
 				decode_number /= 2;
 			}
 			break;
 		}
 		else
 		{
-			x = 2 * x + 1;
+			*x = 2 * *x + 1;
 			decode_number /= 2;
-			degree++;
+			(*degree)++;
 			break;
 		}
 		right *= 2; if (right >= 1) right -= 1;
 		left *= 2; if (left >= 1) left -= 1;
 		if (right == 0 && left == 0)
 			break;
-		degree++;
+		(*degree)++;
 	}
 
-	decode_number *= x;
+	decode_number *= *x;
 }
 
-int save_interval(char* output_filename)
+int save_interval(char* output_filename, double x, int degree)
 {
     int i; // iterator
     int str_len = 0;
@@ -135,15 +134,15 @@ int save_interval(char* output_filename)
         if(char_struct_array[i].count)
         fprintf(FFp,"%c %f %f\n", char_struct_array[i].symbol,char_struct_array[i].left_border, char_struct_array[i].right_border);
     }
-    fprintf(FFp,"%f\n", decode_number);
+    fprintf(FFp,"%f %d\n", x, degree);
     fclose(FFp);
     return 1;
 }
 
 void coding_text(char* input_filename, char* output_filename)
 {
+	double x = 0; int degree = 0; // for double x / (2^degree) number
     FILE * FFp, * FFp2;
-    char* buff[11];
     int str_len;
     char* message;
     int c = 0;
@@ -178,8 +177,8 @@ void coding_text(char* input_filename, char* output_filename)
             {
                 if((int)strlen(message) != 0){
                     strcat(message, "{");
-                    find_interval(message);
-                    if(save_interval(output_filename) == 0)
+                    find_interval(message, &x, &degree);
+                    if(save_interval(output_filename, x, degree) == 0)
                     {
                         exit(EXIT_FAILURE);
                     }
@@ -193,8 +192,8 @@ void coding_text(char* input_filename, char* output_filename)
                 if(file_length % 10 == 0)
                 {
                     strcat(message, "{");
-                    find_interval(message);
-                    if(save_interval(output_filename) == 0)
+                    find_interval(message, &x, &degree);
+                    if(save_interval(output_filename, x, degree) == 0)
                     {
                         fclose(FFp);
                         exit(EXIT_FAILURE);
@@ -212,34 +211,94 @@ void coding_text(char* input_filename, char* output_filename)
 
 void decoding_text(char* input_filename, char* output_filename)
 {
-	double curr_left, curr_size, new_left = 0, new_size = 0, new_right;
+	double decode_number = 1;
+	double x = 0; int degree = 0; // for double x / (2^degree) number
+	FILE* FFp, * FFp2;
+	double curr_left, curr_size, new_left = 0, new_size = 0, new_right=0;
 	double prev_left = 0, prev_size = 1;
 	char symb = ' ';
+	long long size = 0;
+	long long j = 0; // iterator
+	int i = 0, z=0, y=0; //iterators
+	int symb_count = 0;
 
-
-	printf("Text is: \n");
-	while (symb != '{')
+	FFp = fopen(input_filename, "r");
+	FFp2 = fopen(output_filename, "w");
+	if (FFp == NULL || FFp2 == NULL)
 	{
-		for (int i = 0; i < 27; i++)
+		printf("Incorrect filename\n");
+		exit(EXIT_FAILURE);
+	}
+
+	fscanf(FFp, "Start of file. Number of couples: %llu%*[^\n]%*c", &size);
+
+	//fprintf(FFp2, "Text is: \n");
+	for (j = 0; j < size; j++)
+	{
+		new_left = 0; new_size = 0; new_right = 0;
+		prev_left = 0; prev_size = 1;
+		decode_number = 1;
+		
+		for (i = 0; i < ALPHABET_SIZE; i++)
 		{
-			if (char_struct_array[i].count)
+			char_struct_array[i].symbol = (char)(i + (int)'a');
+			char_struct_array[i].count = 0;
+			char_struct_array[i].size = 0;
+			char_struct_array[i].left_border = 0;
+			char_struct_array[i].right_border = 0;
+		}
+
+		fscanf(FFp, "%d\n", &symb_count);
+
+		for (z = 0; z < symb_count; z++)
+		{
+  			fscanf(FFp, "%c %lf %lf\n", &symb, &new_left, &new_right);
+			for (y = 0; y < ALPHABET_SIZE; y++)
 			{
-				curr_left = char_struct_array[i].left_border;
-				curr_size = char_struct_array[i].size;
-				new_left = prev_left + curr_left * prev_size;
-				new_size = curr_size * prev_size;
-				new_right = new_left + new_size;
-				if (new_left <= decode_number && decode_number < new_right)
+				if (symb == char_struct_array[y].symbol)
 				{
-					symb = (char)((int)'a' + i);
-					prev_size = new_size;
-					prev_left = new_left;
+					char_struct_array[y].left_border = new_left;
+					char_struct_array[y].right_border = new_right;
+					char_struct_array[y].size = new_right - new_left;
+					char_struct_array[y].count = 1;
 					break;
 				}
 			}
 		}
-		if (symb != '{')
-			printf("%c", symb);
-	}
 
+		fscanf(FFp, "%lf %d\n", &x, &degree);
+
+		for (i = 0; i < degree; i++)
+		{
+			decode_number /= 2;
+		}
+		decode_number *= x;
+
+		symb = '\0';
+
+		while (symb != '{')
+		{
+			for (i = 0; i < ALPHABET_SIZE; i++)
+			{
+				if (char_struct_array[i].count)
+				{
+					curr_left = char_struct_array[i].left_border;
+					curr_size = char_struct_array[i].size;
+					new_left = prev_left + curr_left * prev_size;
+					new_size = curr_size * prev_size;
+					new_right = new_left + new_size;
+					if (new_left <= decode_number && decode_number < new_right)
+					{
+						symb = (char)((int)'a' + i);
+						prev_size = new_size;
+						prev_left = new_left;
+						break;
+					}
+				}
+			}
+			if (symb != '{')
+				fprintf(FFp2, "%c", symb);
+		}
+	}
+	fclose(FFp); fclose(FFp2);
 }
