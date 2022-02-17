@@ -8,5 +8,5 @@
 #define DEBUG
 
 void find_interval(char* string);
-void coding_text(char* string);
-void decoding_text();
+void coding_text(char* input_filename, char* output_filename);
+void decoding_text(char* input_filename, char* output_filename);
