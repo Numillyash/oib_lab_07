@@ -23,12 +23,14 @@ int filesize(FILE* fp)
 
 void find_interval(char* string)
 {
+	*x = 0; *degree = 0;
 	int str_len = strlen(string);
 	int i = 0; // iterator
 	double curr_left, curr_size, new_left = 0, new_size = 0, new_right;
 	double prev_left = 0, prev_size = 1;
 	int ind; // index of current symbol
 	double right, left; // interval borders that will be changed due sicle
+	double decode_number = 1, degree_minus;
 
 	for (i = 0; i < ALPHABET_SIZE; i++)
 	{
@@ -82,32 +84,32 @@ void find_interval(char* string)
 		if (0.5 > right)
 		{
 			decode_number /= 2;
-			x = 2 * x + 0;
+			*x = 2 * *x + 0;
 		}
 		else if (0.5 < left)
 		{
 			decode_number /= 2;
-			x = 2 * x + 1;
+			*x = 2 * *x + 1;
 		}
 		else if (0.5 == right)
 		{
 			degree_minus = 0.5;
-			x = 2 * x + 0;
-			degree++;
+			*x = 2 * *x + 0;
+			(*degree)++;
 			decode_number /= 2;
 			while (right - degree_minus < left) {
 				degree_minus /= 2;
-				x = 2 * x + 1;
-				degree++;
+				*x = 2 * *x + 1;
+				(*degree)++;
 				decode_number /= 2;
 			}
 			break;
 		}
 		else
 		{
-			x = 2 * x + 1;
+			*x = 2 * *x + 1;
 			decode_number /= 2;
-			degree++;
+			(*degree)++;
 			break;
 		}
 		right *= 2; if (right >= 1) right -= 1;
@@ -118,10 +120,10 @@ void find_interval(char* string)
 
 	}
 
-	decode_number *= x;
+	decode_number *= *x;
 }
 
-int save_interval(char* output_filename)
+int save_interval(char* output_filename, double x, int degree)
 {
 	int i; // iterator
 	int str_len = 0;
