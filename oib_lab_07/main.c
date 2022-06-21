@@ -30,23 +30,23 @@ int main(int argc, char* argv[])
         {
             if (argv[1][0] == CODE_SYMB)
             {
-                start = clock();
+                start = (float)clock();
                 if (!strcmp(argv[4], "1"))
                     coding_text(argv[2], argv[3]);
                 else
                     LZW_coding_text(argv[2], argv[3]);
-                end = clock();
+                end = (float)clock();
                 printf("Worktime : %.3f seconds\n", (end - start) / CLOCKS_PER_SEC);
 
             }
             else if (argv[1][0] == DECODE_SYMB)
             {
-                start = clock();
+                start = (float)clock();
                 if (!strcmp(argv[4], "1"))
                     decoding_text(argv[2], argv[3]);
                 else
                     LZW_decoding_text(argv[2], argv[3]);
-                end = clock();
+                end = (float)clock();
                 printf("Worktime : %.3f seconds\n", (end - start) / CLOCKS_PER_SEC);
             }
             else

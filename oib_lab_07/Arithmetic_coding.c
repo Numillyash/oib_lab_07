@@ -10,7 +10,7 @@ typedef struct
 
 Ar_cod_char char_struct_array[ALPHABET_SIZE];
 
-double x = 0; int degree = 0; // for double x / (2^degree) number
+double *x; int *degree; // for double x / (2^degree) number
 double decode_number = 1, degree_minus;
 
 int filesize(FILE* fp)
@@ -24,9 +24,9 @@ int filesize(FILE* fp)
 void find_interval(char* string)
 {
 	*x = 0; *degree = 0;
-	int str_len = strlen(string);
+	int str_len = (int)strlen(string);
 	int i = 0; // iterator
-	double curr_left, curr_size, new_left = 0, new_size = 0, new_right;
+	double curr_left, curr_size, new_left = 0, new_size = 0, new_right = 0;
 	double prev_left = 0, prev_size = 1;
 	int ind; // index of current symbol
 	double right, left; // interval borders that will be changed due sicle
@@ -123,7 +123,7 @@ void find_interval(char* string)
 	decode_number *= *x;
 }
 
-int save_interval(char* output_filename, double x, int degree)
+int save_interval(char* output_filename)
 {
 	int i; // iterator
 	int str_len = 0;
@@ -149,15 +149,14 @@ int save_interval(char* output_filename, double x, int degree)
 	fprintf(FFp, "%lf\n", decode_number);
 	fclose(FFp);
 	decode_number = 1;
-	degree = 0;
-	x = 0;
+	*degree = 0;
+	*x = 0;
 	return 1;
 }
 
 void coding_text(char* input_filename, char* output_filename)
 {
 	FILE* FFp, * FFp2;
-	char* buff[11];
 	int str_len;
 	char* message;
 	int c = 0;
@@ -183,7 +182,7 @@ void coding_text(char* input_filename, char* output_filename)
 		fprintf(FFp2, "Start of file. Number of couples: %llu\n", size);
 		fclose(FFp2);
 		str_len = SYMB_IN_COUPLE;
-		message = (char*)malloc(str_len + 2);
+		message = (char*)malloc((long)str_len + 2);
 		message[0] = '\0';
 
 		while (c != EOF) {
@@ -237,7 +236,7 @@ void coding_text(char* input_filename, char* output_filename)
 void read_couple(FILE* input, FILE* output)
 {
 	char symb = ' ';
-	double curr_left, curr_size, new_left = 0, new_size = 0, new_right;
+	double new_left = 0, new_size = 0, new_right;
 	double prev_left = 0, prev_size = 1;
 	int i,j, char_in_couple;
 
