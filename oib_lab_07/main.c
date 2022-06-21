@@ -19,7 +19,7 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "Arithmetic_coding.h"
+#include "LZW.h"
 
 int main(int argc, char* argv[])
 {
