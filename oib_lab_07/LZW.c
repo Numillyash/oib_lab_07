@@ -30,7 +30,7 @@ find_match(int hash_prefix, unsigned int hash_character)
     int index;
     int offset;
 
-    index = (hash_character << HASHING_SHIFT) ^ hash_prefix;
+    index = (hash_character << (HASHING_SHIFT)) ^ hash_prefix;
     if (index == 0)
         offset = 1;
     else
@@ -126,7 +126,6 @@ decode(FILE* input, FILE* output)
     unsigned int new_code;
     unsigned int old_code;
     int character;
-    int counter;
     unsigned char* string;
     next_code = 256;
 
