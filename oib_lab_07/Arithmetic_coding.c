@@ -2,7 +2,7 @@
 typedef struct
 {
 	short count;
-	char symbol;
+	unsigned char symbol;
 	double left_border;
 	double right_border;
 	double size;
@@ -10,7 +10,7 @@ typedef struct
 
 Ar_cod_char char_struct_array[ALPHABET_SIZE];
 
-double *x; int *degree; // for double x / (2^degree) number
+double* x; int* degree; // for double x / (2^degree) number
 double decode_number = 1, degree_minus;
 
 int filesize(FILE* fp)
@@ -21,16 +21,16 @@ int filesize(FILE* fp)
 	return sz;
 }
 
-void find_interval(char* string)
+void find_interval(unsigned char* string)
 {
 	*x = 0; *degree = 0;
-	int str_len = (int)strlen(string);
+	int str_len = SYMB_IN_COUPLE;
 	int i = 0; // iterator
 	double curr_left, curr_size, new_left = 0, new_size = 0, new_right = 0;
 	double prev_left = 0, prev_size = 1;
 	int ind; // index of current symbol
 	double right, left; // interval borders that will be changed due sicle
-	double decode_number = 1, degree_minus;
+	
 
 	for (i = 0; i < ALPHABET_SIZE; i++)
 	{
@@ -116,19 +116,17 @@ void find_interval(char* string)
 		left *= 2; if (left >= 1) left -= 1;
 		if (right == 0 && left == 0)
 			break;
-		degree++;
+		(*degree)++;
 
 	}
 
 	decode_number *= *x;
 }
 
-int save_interval(char* output_filename)
+int save_interval(char* output_filename, FILE* FFp)
 {
 	int i; // iterator
 	int str_len = 0;
-	FILE* FFp;
-	FFp = fopen(output_filename, "a");
 
 	if (FFp == NULL)
 	{
@@ -147,7 +145,6 @@ int save_interval(char* output_filename)
 			fprintf(FFp, "%c %lf %lf\n", char_struct_array[i].symbol, char_struct_array[i].left_border, char_struct_array[i].right_border);
 	}
 	fprintf(FFp, "%lf\n", decode_number);
-	fclose(FFp);
 	decode_number = 1;
 	*degree = 0;
 	*x = 0;
@@ -156,16 +153,20 @@ int save_interval(char* output_filename)
 
 void coding_text(char* input_filename, char* output_filename)
 {
+	double idk; x = &idk;
+	int idk2; degree = &idk2;
 	FILE* FFp, * FFp2;
 	int str_len;
-	char* message;
-	int c = 0;
+	unsigned char message[SYMB_IN_COUPLE+2];
+	unsigned int  c = 0;
 	long long file_length = 0;
 	char st[2];
 	long long size = 0;
 
-	FFp = fopen(input_filename, "r");
-	FFp2 = fopen(output_filename, "w");
+	long long size_real = 0;
+
+	FFp = fopen(input_filename, "rb");
+	FFp2 = fopen(output_filename, "wb");
 	if (FFp == NULL || FFp2 == NULL)
 	{
 		printf("Incorrect input filename\n");
@@ -176,54 +177,51 @@ void coding_text(char* input_filename, char* output_filename)
 		fseek(FFp, 0, SEEK_END);
 		size = ftell(FFp);
 		fclose(FFp);
-		FFp = fopen(input_filename, "r");
+		FFp = fopen(input_filename, "rb");
 		size = (size % SYMB_IN_COUPLE == 0) ? size / SYMB_IN_COUPLE : (size / SYMB_IN_COUPLE) + 1;
 
 		fprintf(FFp2, "Start of file. Number of couples: %llu\n", size);
-		fclose(FFp2);
+		//fclose(FFp2);
 		str_len = SYMB_IN_COUPLE;
-		message = (char*)malloc((long)str_len + 2);
-		message[0] = '\0';
+		for (size_real = 0; size_real < SYMB_IN_COUPLE + 2; size_real++)
+			message[size_real] = '\0';
 
-		while (c != EOF) {
-			c = fgetc(FFp);
-			if (c == EOF)
+		while ((c = getc(FFp)) != (unsigned)EOF)
+		{
+			message[file_length] = c;
+			message[file_length+1] = '\0';
+			file_length++;
+			if (file_length == SYMB_IN_COUPLE)
 			{
-				if ((int)strlen(message) != 0) {
-					strcat(message, "{");
-					find_interval(message);
-					if (save_interval(output_filename) == 0)
-					{
-						exit(EXIT_FAILURE);
-					}
-				}
-			}
-			else
-			{
-				st[0] = c; st[1] = '\0';
-				strcat(message, st);
-				file_length++;
-				if (file_length % SYMB_IN_COUPLE == 0)
+				//
+				//printf("|Message in this couple: |%s|\n", message);
+				find_interval(message);
+				if (save_interval(output_filename, FFp2) == 0)
 				{
-					strcat(message, "{");
-					find_interval(message);
-					if (save_interval(output_filename) == 0)
-					{
-						fclose(FFp);
-						exit(EXIT_FAILURE);
-					}
-					message[0] = '\0';
+					exit(EXIT_FAILURE);
 				}
-
+				file_length = 0;
+				message[0] = '\0';
 			}
 		}
-		FFp2 = fopen(output_filename, "a");
+		if (file_length != 0)
+		{
+			find_interval(message);
+			if (save_interval(output_filename, FFp2) == 0)
+			{
+				exit(EXIT_FAILURE);
+			}
+			file_length = 0;
+			message[0] = '\0';
+		}
+		//FFp2 = fopen(output_filename, "a");
 		fprintf(FFp2, "End of file");
 	}
 	fclose(FFp);
+	fclose(FFp2);
 
-	FFp = fopen(input_filename, "r");
-	FFp2 = fopen(output_filename, "r");
+	FFp = fopen(input_filename, "rb");
+	FFp2 = fopen(output_filename, "rb");
 	int into = filesize(FFp);
 	int outof = filesize(FFp2);
 	float koef = (float)into / (float)outof;
@@ -238,11 +236,11 @@ void read_couple(FILE* input, FILE* output)
 	char symb = ' ';
 	double new_left = 0, new_size = 0, new_right;
 	double prev_left = 0, prev_size = 1;
-	int i,j, char_in_couple;
+	int i, j, char_in_couple;
 
 	for (i = 0; i < ALPHABET_SIZE; i++)
 	{
-		char_struct_array[i].symbol = (char)(i);
+		char_struct_array[i].symbol = (unsigned char)(i);
 		char_struct_array[i].count = 0;
 		char_struct_array[i].size = 0;
 		char_struct_array[i].left_border = 0;
@@ -254,14 +252,13 @@ void read_couple(FILE* input, FILE* output)
 	for (i = 0; i < char_in_couple; i++)
 	{
 		fscanf(input, "%c %lf%lf\n", &symb, &new_left, &new_right);
-		char_struct_array[(int)symb].left_border = new_left;
-		char_struct_array[(int)symb].right_border = new_right;
-		char_struct_array[(int)symb].size = new_right - new_left;
-		char_struct_array[(int)symb].count = 1;
+		char_struct_array[(unsigned char)symb].left_border = new_left;
+		char_struct_array[(unsigned char)symb].right_border = new_right;
+		char_struct_array[(unsigned char)symb].size = new_right - new_left;
+		char_struct_array[(unsigned char)symb].count = 1;
 	}
 
 	fscanf(input, "%lf\n", &decode_number);
-	symb = ' ';
 	/*for (i = 0; i < ALPHABET_SIZE; i++)
 	{
 		if (char_struct_array[i].count)
@@ -270,27 +267,17 @@ void read_couple(FILE* input, FILE* output)
 		}
 	}*/
 
-	for (j = 0; j < SYMB_IN_COUPLE && symb != '{'; j++)
+	for (j = 0; j < SYMB_IN_COUPLE; j++)
 	{
-		/*for (i = 0; i < ALPHABET_SIZE; i++)
-		{
-			if (char_struct_array[i].count)
-			{
-				printf("%c %f %f\n", char_struct_array[i].symbol, char_struct_array[i].left_border, char_struct_array[i].right_border);
-			}
-		}*/
-
-		/*printf("\n%d %lf %lf %lf\n", j, new_left, new_left + new_size, decode_number);*/
-
 		for (i = 0; i < ALPHABET_SIZE; i++)
 		{
 			if (char_struct_array[i].count && char_struct_array[i].left_border <= decode_number && char_struct_array[i].right_border > decode_number)
 			{
 				symb = char_struct_array[i].symbol;
-				if(symb != '{')
 					fprintf(output, "%c", char_struct_array[i].symbol);
+					//printf("%c", char_struct_array[i].symbol);
 				/*printf("%c\n\n", char_struct_array[i].symbol);*/
-				
+
 				new_left = char_struct_array[i].left_border;
 				new_size = char_struct_array[i].size;
 				break;
@@ -305,12 +292,12 @@ void read_couple(FILE* input, FILE* output)
 			if (char_struct_array[i].count)
 			{
 				char_struct_array[i].left_border = new_right;
-				char_struct_array[i].size *= new_size/prev_size;
+				char_struct_array[i].size *= new_size / prev_size;
 				new_right = char_struct_array[i].left_border + char_struct_array[i].size;
 				char_struct_array[i].right_border = new_right;
 			}
 		}
-		
+
 		prev_size = new_size;
 		prev_left = new_left;
 	}
@@ -321,8 +308,8 @@ void decoding_text(char* input_filename, char* output_filename)
 	int couple, i;
 	FILE* FFp, * FFp2;
 
-	FFp = fopen(input_filename, "r");
-	FFp2 = fopen(output_filename, "w");
+	FFp = fopen(input_filename, "rb");
+	FFp2 = fopen(output_filename, "wb");
 
 	if (FFp == NULL || FFp2 == NULL)
 	{
@@ -334,7 +321,7 @@ void decoding_text(char* input_filename, char* output_filename)
 	for (i = 0; i < couple; i++)
 	{
 		read_couple(FFp, FFp2);
+		//printf("Done %d couple\n", i);
 	}
-
 	fclose(FFp); fclose(FFp2);
 }
