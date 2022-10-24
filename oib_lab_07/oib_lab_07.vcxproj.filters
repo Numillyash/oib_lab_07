@@ -18,17 +18,11 @@
     <ClCompile Include="main.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
-    <ClCompile Include="Arithmetic_coding.c">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
     <ClCompile Include="LZW.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Arithmetic_coding.h">
-      <Filter>Файлы заголовков</Filter>
-    </ClInclude>
     <ClInclude Include="config.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>

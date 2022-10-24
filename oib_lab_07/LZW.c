@@ -11,6 +11,14 @@ unsigned int prefix_code[TABLE_SIZE];
 unsigned char append_character[TABLE_SIZE];
 unsigned char decode_stack[4000];
 
+int filesize(FILE* fp)
+{
+    fseek(fp, 0L, SEEK_END);
+    int sz = ftell(fp);
+    rewind(fp);
+    return sz;
+}
+
 output_code(FILE* output, unsigned int code)
 {
     static int output_bit_count = 0;
